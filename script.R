@@ -66,17 +66,44 @@ dat1[is.na(dat1$steps) & dat1$interval == int_val, "steps"] <- fillin
 
 
 # solution 3, pick any value at same interval
+# I cant get this working, with or without group
+# also tried mutate_each
+# use loop
 dat1 <- dat
-dat1 <- dat1 %>% 
-  group_by(interval) %>% 
-  mutate( sim_steps =
-            ifelse( 
-              #copy if is not na,
-              ! is.na(steps), steps,  
-              # pick one value from dat at same interval
-              sample( dat[dat$interval==interval & !is.na(dat$steps), "steps" ], 1)
-                  )
-        )
+dat1 <- dat %>% mutate(
+  sim_steps =
+    ifelse( 
+      #copy if is not na,
+      ! is.na(steps), steps,  
+      # pick one value from dat at same interval
+      sample( dat[dat$interval==interval & !is.na(dat$steps), "steps" ], 1, replace = T )
+      )
+   )
+
+
+# not R way, but it works
+for ( i in 1: nrow(dat1) ) {
+  if ( ! is.na(dat[i, "steps"]) ) { next }
+  samples <- dat[dat$interval==dat[i, "interval"] & ! is.na(dat$steps), "steps"]
+  dat1[i, "steps"] <- sample (samples, 1, replace = T)
+}
+
+
 # verify 
-dat_diff<-dat1[is.na(dat1$steps),]
-plot(group_by(dat_diff, interval) %>% summarise(sum(sim_steps)))
+dat_diff<-dat1[is.na(dat$steps),]
+dat_diff[dat_diff$interval==1100,]
+
+
+plot(group_by(dat_diff, interval) %>% summarise(sum(steps)))
+
+
+## next question...
+
+dat1 <- dat1 %>% mutate( wday = ifelse( strftime(date, "%w") %in% c(0,6), "weekend", "weekday" ) )
+wdat<- dat1 %>% group_by(interval, wday) %>% summarize(avg_steps = mean(steps))
+
+g<-qplot(interval, avg_steps, data=wdat)
+g + geom_line() + facet_wrap( ~wday, nrow=2) + ylab("Number of Steps") + theme_bw()
+
+
+
