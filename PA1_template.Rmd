@@ -143,10 +143,10 @@ dat1 <- dat1 %>% mutate( wday = ifelse( strftime(date, "%w") %in% c(0,6), "weeke
 
 ``` {r weekday_plots, fig.height=6}
 wdat<- dat1 %>% group_by(interval, wday) %>% summarize(avg_steps = mean(steps))
-g<-qplot(interval, avg_steps, data=wdat)
+g<-ggplot(aes(interval, avg_steps), data=wdat)
 g + geom_line(color="blue") + facet_wrap( ~wday, nrow=2) + ylab("Number of Steps") + theme_bw()
 ```
 
-
+3. Acitivities between weekend and weekday are different, weekday office hour had lower activities but higher during commute hours, weekend activities are more even. 
 
 

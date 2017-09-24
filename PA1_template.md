@@ -131,7 +131,7 @@ hist((daily_total_1$total), breaks=50, main="histogram of daily total with simul
 
 ![plot of chunk hist2](figure/hist2-1.png)
 
-3. Mean value of total steps each day is 10803.15, median is 11015, compares to results from dataset without simulated data, the difference is very small, no real impact.
+3. Mean value of total steps each day is 10814.8, median is 11015, compares to results from dataset without simulated data, the difference is very small, no real impact.
 
 
 ### Are there differences in activity patterns between weekdays and weekends?
@@ -152,12 +152,12 @@ dat1 <- dat1 %>% mutate( wday = ifelse( strftime(date, "%w") %in% c(0,6), "weeke
 
 ```r
 wdat<- dat1 %>% group_by(interval, wday) %>% summarize(avg_steps = mean(steps))
-g<-qplot(interval, avg_steps, data=wdat)
+g<-ggplot(aes(interval, avg_steps), data=wdat)
 g + geom_line(color="blue") + facet_wrap( ~wday, nrow=2) + ylab("Number of Steps") + theme_bw()
 ```
 
 ![plot of chunk weekday_plots](figure/weekday_plots-1.png)
 
-
+3. Acitivities between weekend and weekday are different, weekday office hour had lower activities but higher during commute hours, weekend activities are more even. 
 
 
