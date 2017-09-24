@@ -7,6 +7,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2, warn.conflicts = F)
+library(dplyr, warn.conflicts = F)
+library(knitr)
 ```
 
 ## Introudction
@@ -32,7 +35,6 @@ load library
 import csv file with predefined column type and NA string
 
 ```{r load_data}
-library(dplyr, warn.conflicts = F)
 dat<-read.csv("activity.csv",colClasses=c("numeric","Date","numeric"), na.strings="NA")
 
 ```
@@ -47,7 +49,7 @@ For this part of the assignment, you can ignore the missing values in the datase
 **Answer:**  
 1. group data by date, caculate total, mean, and median  
 add a column of string value of date, this is for xtable  
-```{r}
+```{r results}
 daily_total <- dat[!is.na(dat$steps),] %>% 
   group_by(date) %>% 
   summarize(total=sum(steps))
@@ -71,12 +73,12 @@ hist((daily_total$total), breaks=50, main="histogram of daily total",xlab="steps
 
 **Answer:**  
 1. average over groups of 5 minutes interval, display with line plot.
-```{r}
+```{r acitivity, fig.height=4}
 by_interval <- dat[!is.na(dat$steps) ,] %>% group_by(interval) %>% summarize(mean=mean(steps))
 plot(by_interval$interval, by_interval$mean, type="l", main="activity in 24 hours", ylab="steps", xlab="time")
 ```
 
-```{r}
+```{r maxinterval}
 five_minutes_max<-max(by_interval$mean)
 ```
 
@@ -98,7 +100,7 @@ five_minutes_max<-max(by_interval$mean)
 - to do it in hard way, assumming the missing steps are random, we will pick any value from the list, the list is made up from all non-na values in same interval.
 
 
-```{r}
+```{r sim_missingdata}
 dat1 <- dat
 # not R way, and it is slow, can someone teach me better method?
 for ( i in 1: nrow(dat1) ) {
@@ -110,14 +112,14 @@ for ( i in 1: nrow(dat1) ) {
 
 2. re-do the plots, *no noticable differce*
 
-```{r}
+```{r result2}
 daily_total_1 <- dat1 %>% 
   group_by(date) %>% 
   summarize(total=sum(steps))
 daily_total_mean_1=as.character(round(mean(daily_total_1$total),2))
 daily_total_median_1=as.character(round(median(daily_total_1$total),2))
 ```
-```{r hist1, fig.height=4}
+```{r hist2, fig.height=4}
 hist((daily_total_1$total), breaks=50, main="histogram of daily total with simulated data",xlab="steps")
 ```  
 
@@ -132,15 +134,14 @@ hist((daily_total_1$total), breaks=50, main="histogram of daily total with simul
 **Answers:**  
 1. create weekend and weekday for each row
 
-```{r}
+```{r weekdays}
 dat1 <- dat1 %>% mutate( wday = ifelse( strftime(date, "%w") %in% c(0,6), "weekend", "weekday" ) )
 
 ```
 
 2. plotting, cant get exactly the sample shows
 
-``` {r}
-library(ggplot2, warn.conflicts = F)
+``` {r weekday_plots, fig.height=6}
 wdat<- dat1 %>% group_by(interval, wday) %>% summarize(avg_steps = mean(steps))
 g<-qplot(interval, avg_steps, data=wdat)
 g + geom_line(color="blue") + facet_wrap( ~wday, nrow=2) + ylab("Number of Steps") + theme_bw()
